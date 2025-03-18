@@ -31,4 +31,14 @@ public class LightController {
         }
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> deleteLight(@RequestBody Light light) {
+        try {
+            this.lightService.deleteLight(light);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 }

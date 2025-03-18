@@ -43,4 +43,22 @@ public class LightService {
             return found.get();
         }
     }
+
+    public void deleteLight(Light light) throws NotFoundException {
+        if (light.getId() == null) {
+            log.error("Light with id null not found");
+            throw new NotFoundException("Can't delete light", "Can't delete Light with id null");
+        }
+
+        Optional<Light> found = this.lights
+                .stream()
+                .filter(lightKnown -> lightKnown.getId().compareTo(light.getId()) == 0)
+                .findFirst();
+        if (found.isEmpty()) {
+            log.error("Light with id {} not found", light.getId());
+            throw new NotFoundException("Can't delete light", "Can't find Light with id : " + light.getId());
+        }
+
+        this.lights.remove(found.get());
+    }
 }
