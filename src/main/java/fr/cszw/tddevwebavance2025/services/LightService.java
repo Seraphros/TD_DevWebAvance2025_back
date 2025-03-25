@@ -2,36 +2,36 @@ package fr.cszw.tddevwebavance2025.services;
 
 import fr.cszw.tddevwebavance2025.exceptions.NotFoundException;
 import fr.cszw.tddevwebavance2025.models.Light;
-import lombok.NoArgsConstructor;
+import fr.cszw.tddevwebavance2025.repositories.LightRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@NoArgsConstructor
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class LightService {
 
-    private List<Light> lights = new ArrayList<>();
+    private final LightRepository lightRepository;
+
     private long lastId = 0;
 
     public List<Light> getLights() {
-        return this.lights;
+        return this.lightRepository.findAll();
     }
 
     public Light updateLight(Light light) throws NotFoundException {
         if (light.getId() == null) {
-            light.setId(lastId);
-            lastId++;
-            this.lights.add(light);
+            light = this.lightRepository.save(light);
             return light;
         } else {
-            Optional<Light> found = this.lights
+            Light finalLight = light;
+            Optional<Light> found = this.getLights()
                     .stream()
-                    .filter(lightKnown -> lightKnown.getId().compareTo(light.getId()) == 0)
+                    .filter(lightKnown -> lightKnown.getId().compareTo(finalLight.getId()) == 0)
                     .findFirst();
             if (found.isEmpty()) {
                 log.error("Light with id {} not found", light.getId());
@@ -40,6 +40,7 @@ public class LightService {
 
             found.get().setName(light.getName());
             found.get().setState(light.getState());
+            this.lightRepository.save(found.get());
             return found.get();
         }
     }
@@ -50,7 +51,7 @@ public class LightService {
             throw new NotFoundException("Can't delete light", "Can't delete Light with id null");
         }
 
-        Optional<Light> found = this.lights
+        Optional<Light> found = this.getLights()
                 .stream()
                 .filter(lightKnown -> lightKnown.getId().compareTo(light.getId()) == 0)
                 .findFirst();
@@ -59,11 +60,13 @@ public class LightService {
             throw new NotFoundException("Can't delete light", "Can't find Light with id : " + light.getId());
         }
 
-        this.lights.remove(found.get());
+        this.lightRepository.delete(found.get());
     }
 
     public List<Light> invertAllLights() {
-        this.getLights().forEach(light -> light.setState(!light.getState()));
-        return this.lights;
+        List<Light> lights = this.getLights();
+        lights.forEach(light -> light.setState(!light.getState()));
+        this.lightRepository.saveAll(lights);
+        return lights;
     }
 }
