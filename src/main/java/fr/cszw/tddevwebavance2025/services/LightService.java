@@ -61,4 +61,9 @@ public class LightService {
 
         this.lights.remove(found.get());
     }
+
+    public List<Light> invertAllLights() {
+        this.getLights().forEach(light -> light.setState(!light.getState()));
+        return this.lights;
+    }
 }

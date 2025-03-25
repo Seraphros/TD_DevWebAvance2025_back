@@ -41,4 +41,9 @@ public class LightController {
         }
     }
 
+    @PostMapping("/invertAll")
+    public ResponseEntity<List<Light>> invertAllLights() {
+            return new ResponseEntity<>(this.lightService.invertAllLights(), HttpStatus.OK);
+    }
+
 }
